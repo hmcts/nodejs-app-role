@@ -1,0 +1,30 @@
+---
+
+- name: Service | Ensure sysconf exists
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+  with_items:
+    - "/etc/sysconfig"
+  become: yes
+
+- name: Service | Install systemd service
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "root"
+    group: "root"
+    mode: "{{ item.mode }}"
+  become: yes
+  register: service_definition
+  with_items:
+    - src: 'sysconf.systemd.j2'
+      dest: "/etc/sysconfig/{{ nodejs_app.service_name }}"
+      mode: 'u=rwx,g=rx,o=rx'
+    - src: 'service.systemd.j2'
+      dest: "/etc/systemd/system/{{ nodejs_app.service_name }}.service"
+      mode: 'u=rw,g=r,o=r'
+

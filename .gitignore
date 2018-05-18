@@ -1,0 +1,4 @@
+.vagrant
+cloned_repos/*
+roles/*
+!roles/nodejs-app-role

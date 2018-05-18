@@ -1,0 +1,11 @@
+NODE_ENV="{{ nodejs_app.deployment_env|default("development") }}"
+USERNAME="{{ nodejs_app.username|default("") }}"
+PASSWORD="{{ nodejs_app.password|default("") }}"
+NODE_PATH="{{ nodejs_app.dest }}"
+NODE_CONFIG_DIR="{{ nodejs_app.dest }}/config"
+
+{% if nodejs_app.custom_vars_env is defined %}
+{% for custom_var in nodejs_app.custom_vars_env %}
+{{custom_var.name}}={{custom_var.value}}
+{% endfor %}
+{% endif %}

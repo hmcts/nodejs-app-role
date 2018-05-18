@@ -1,0 +1,18 @@
+---
+
+- include: remove.yml
+  with_items: "{{ nodejs_apps_remove }}"
+  loop_control:
+    loop_var: nodejs_app
+
+- include: app.yml
+  with_items: "{{ nodejs_apps }}"
+  loop_control:
+    loop_var: nodejs_app
+  when: "nodejs_app.deploy | default(true)"
+
+- include: service.yml
+  with_items: "{{ nodejs_apps }}"
+  loop_control:
+    loop_var: nodejs_app
+  when: "nodejs_app.deploy | default(true)"

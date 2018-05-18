@@ -1,0 +1,52 @@
+---
+- name: "Git | Clone the app repo"
+  local_action:
+    module: git
+    repo: "{{ nodejs_app.repo }}"
+    version: "{{ nodejs_app.branch }}"
+    dest: "cloned_repos/{{ nodejs_app.service_name }}"
+    depth: 1
+    accept_hostkey: yes
+    update: yes
+    force: yes
+  become: no
+  run_once: yes
+  register: git_repo
+
+- name: "Rsync | Ensure destination directory exists"
+  file:
+    state: directory
+    path: "{{ nodejs_app.dest }}"
+    owner: "{{ nodejs_app.user | default('webapp') }}"
+    group: "{{ nodejs_app.user | default('webapp') }}"
+    recurse: yes
+  become: yes
+
+- name: "Rsync | Rsync the git repo"
+  local_action: shell rsync -avz --rsh=ssh -e 'ssh' cloned_repos/{{ nodejs_app.service_name }}/ {{inventory_hostname}}:{{ nodejs_app.dest }}/ --rsync-path="sudo rsync"
+
+- name: "Rsync | ensure {{ nodejs_app.user | default('webapp') }} owns app"
+  file:
+    state: directory
+    path: "{{ nodejs_app.dest }}"
+    owner: "{{ nodejs_app.user | default('webapp') }}"
+    group: "{{ nodejs_app.user | default('webapp') }}"
+    recurse: yes
+  become: yes
+
+- name: "NPM | Install packages"
+  shell: "{{ (nodejs_app.enableDevtoolset is defined and nodejs_app.enableDevtoolset) | \
+             ternary('. /opt/rh/devtoolset-2/enable && npm install --production','npm install --production') }}"
+  args:
+    chdir: "{{ nodejs_app.dest }}"
+  become: yes
+  become_user: "{{ nodejs_app.user | default('webapp') }}"
+  register: npm_install
+
+- name: "App prerequisites | Generate assets"
+  command: "npm run setup"
+  args:
+    chdir: "{{ nodejs_app.dest }}"
+  become: yes
+  become_user: "{{ nodejs_app.user | default('webapp') }}"
+  register: assets_generated

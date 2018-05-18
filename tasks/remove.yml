@@ -1,0 +1,27 @@
+---
+
+- name: Check if the service has been removed
+  stat:
+    path: "/etc/init.d/{{ nodejs_app.service_name }}"
+  register: st
+
+- name: Stop the service
+  service:
+    name: "{{ nodejs_app.service_name }}"
+    state: stopped
+    enabled: no
+  become: yes
+  when: st.stat.islnk is defined
+
+- name: Remove all the files
+  file:
+    dest: "/etc/init.d/{{ nodejs_app.service_name }}"
+    state: absent
+  become: yes
+  with_items:
+    - "/etc/sysconfig/{{ nodejs_app.service_name }}"
+    - "/etc/systemd/system/{{ nodejs_app.service_name }}.service"
+    - "/etc/init.d/{{ nodejs_app.service_name }}"
+    - "/var/run/{{ nodejs_app.service_name }}.pid"
+    - "/var/log/{{ nodejs_app.service_name }}"
+    - "{{ nodejs_app.dest }}"

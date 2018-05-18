@@ -1,0 +1,16 @@
+---
+- name: Install Node.js App
+  hosts: all
+  become: true
+  vars:
+    nodejs_apps:
+      - repo: "https://github.com/alphagov/govuk_prototype_kit.git"
+        branch: master
+        user: node_app
+        dest: "/opt/nodejs_app"
+        service_name: nodejs_app
+    node:
+      - version: 4.4.7
+  roles:
+    - reform.nodejs
+    - nodejs-app-role

@@ -1,0 +1,12 @@
+[Unit]
+Description={{ nodejs_app.service_name }}
+
+[Service]
+ExecStart=/usr/local/bin/node {{ nodejs_app.dest }}/server.js
+Restart=always
+RestartSec=10
+User={{ nodejs_app.user | default('webapp') }}
+EnvironmentFile=-/etc/sysconfig/{{ nodejs_app.service_name }}
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,53 @@
+---
+
+- name: SELinux | Ensure app can bind to ports
+  seboolean:
+    name: httpd_can_network_connect
+    state: yes
+    persistent: yes
+  become: yes
+  when: ansible_selinux and ansible_selinux.status == "enabled"
+
+- name: Ensure directories are created
+  become: yes
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "u=rw,o=r,g=r"
+    owner: "{{ nodejs_app.user | default('webapp') }}"
+    group: "{{ nodejs_app.user | default('webapp') }}"
+    mode: 0755
+  with_items:
+    - "/var/log/{{ nodejs_app.service_name }}"
+
+- name: Service | Create files needed by service
+  file:
+    path: "{{ item }}"
+    mode: "u=rw,o=r,g=r"
+    owner: "{{ nodejs_app.user | default('webapp') }}"
+    group: "{{ nodejs_app.user | default('webapp') }}"
+    state: touch
+  become: yes
+  with_items:
+    - /var/run/{{ nodejs_app.service_name }}.pid
+    - /var/log/{{ nodejs_app.service_name }}/startup.log
+    - /var/log/{{ nodejs_app.service_name }}/{{ nodejs_app.service_name }}.log
+
+- name: Service | Check if systemd is installed
+  shell: rpm -q systemd | grep "systemd"
+  ignore_errors: yes
+  register: systemd_installed
+
+- include: service/initrd.yml
+  when: systemd_installed|failed
+
+- include: service/systemd.yml
+  when: systemd_installed|success
+
+- name: Service | Start the service
+  service:
+    name: "{{ nodejs_app.service_name }}"
+    state: restarted
+    enabled: yes
+  become: yes
+  when: git_repo.changed or npm_install.changed or assets_generated.changed or service_definition.changed

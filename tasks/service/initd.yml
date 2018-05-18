@@ -1,0 +1,17 @@
+---
+- name: NPM | Install forever
+  npm:
+    name: forever
+    global: yes
+  become: yes
+
+- name: Service | Install initd service
+  template:
+    src: "service.initd.j2"
+    dest: "/etc/init.d/{{ nodejs_app.service_name }}"
+    owner: "root"
+    group: "root"
+    mode: "u=rwx,g=rx,o=rx"
+  become: yes
+  register: service_definition
+

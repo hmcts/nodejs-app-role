@@ -1,0 +1,20 @@
+---
+
+nodejs_apps: []
+# Example Node.js app
+# - repo:           'git@github.com:example/nodejs-app.git'
+#   branch:         'master'
+#   deploy:         true
+#   dest:           '/opt/project/prototype'
+#   user:           'project'
+#   service_name:   'project-prototype'
+#   username:       'htaccess-user'
+#   password:       "{{ password_from_secrets }}"
+#   deployment_env: 'development'
+#   enableDevtoolset: true
+#   custom_vars_env:
+#      - {name: 'REDISCLOUD_URL', value: 'redis://127.0.0.1:6379'}
+
+nodejs_apps_remove: []
+# - dest:         '/opt/project/prototype'
+#   service_name: 'project-prototype'
